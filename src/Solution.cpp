@@ -60,7 +60,6 @@ bool Solution::isMatch(const std::string& r, const std::string& s) {
 	auto is_match = std::all_of(patterns.begin(), patterns.end(), [](const auto& pattern) { return pattern.match();} );
 	// !empty && can_move &&  most_+_index 
 	
-	
 	std::cout << is_match << std::endl;
 	return false; // TODO make solution
 }
