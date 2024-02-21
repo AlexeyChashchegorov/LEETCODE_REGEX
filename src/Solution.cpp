@@ -53,13 +53,52 @@ bool Solution::isMatch(const std::string& r, const std::string& s) {
 		start = pattern.string.data() + pattern.string.size();
 	}
 
-	for (auto& pattern : patterns) {
-		std::cout << pattern.str() << std::endl;
+	for (auto& pattern : patterns) std::cout << pattern.str() << std::endl;
+		
+	
+	
+	while (std::find_if(patterns.begin(), patterns.end(), [](const auto& pattern) { return !pattern.match();}) != patterns.end()) {
+		// !empty && can_move &&  most_+_index 
+
+		auto it=std::next(patterns.rbegin(),1);
+		for(; it!=patterns.rend(); it++) {
+			auto prev_it = std::prev(it, 1);
+			//std::cout << "?(" << it->str() << ") (" << prev_it->str() << ")" << std::endl;
+			bool can_move_to_next = !it->string.empty() && (prev_it->regex.size() != 1 || prev_it->string.empty()); 
+			bool next_unmatch_or_have_cap = (!prev_it->match() || prev_it->regex.size() != 1); 
+			bool have_not_unmatched_at_back = 
+				std::find_if(std::next(it), patterns.rend(),
+					[](const auto& pattern){ return !pattern.match(); }) == patterns.rend();
+			if ( can_move_to_next && next_unmatch_or_have_cap && have_not_unmatched_at_back ) {
+				break;
+			}
+		}
+		if (it == patterns.rend()) {
+			// first time not a problem
+			it=std::next(patterns.rbegin(),1);
+			for(; it!=patterns.rend(); it++) {
+				auto prev_it = std::prev(it, 1);
+				bool can_move_to_next = !it->string.empty() && (prev_it->regex.size() != 1 || prev_it->string.empty()); 
+				bool next_unmatch_or_have_cap = (!prev_it->match() || prev_it->regex.size() != 1); 
+				if ( can_move_to_next && next_unmatch_or_have_cap ) {
+					break;
+				}
+			}
+			if (it == patterns.rend()) {
+				std::cout << "not match" << std::endl;
+				break;
+			}
+		}
+		auto& from_string = it->string;
+		auto& to_string = std::prev(it)->string;
+		std::cout <<"--" << std::endl;
+		//std::cout << "M-->:" <<  from_string << std::endl;
+		//std::cout << "M<--:" <<  to_string << std::endl;
+		to_string = std::string_view(&from_string[0] + from_string.size() - 1, to_string.size() + 1);
+		from_string.remove_suffix(1);
+		
+		for (auto& pattern : patterns) std::cout << pattern.str() << std::endl;
 	}
 	
-	auto is_match = std::all_of(patterns.begin(), patterns.end(), [](const auto& pattern) { return pattern.match();} );
-	// !empty && can_move &&  most_+_index 
-	
-	std::cout << is_match << std::endl;
 	return false; // TODO make solution
 }
