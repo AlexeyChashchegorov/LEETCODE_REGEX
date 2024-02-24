@@ -62,11 +62,11 @@ bool Solution::isMatch(const std::string& r, const std::string& s) {
 		for(; it!=patterns.rend(); it++) {
 			auto prev_it = std::prev(it, 1);
 			//std::cout << "?(" << it->str() << ") (" << prev_it->str() << ")" << std::endl;
-			bool can_move_to_next = !it->string.empty() && (prev_it->regex.size() != 1 || prev_it->string.empty()); 
+			bool can_move_to_next = !it->match() && !it->string.empty() && (prev_it->regex.size() != 1 || prev_it->string.empty()); 
 			bool have_not_unmatched_at_back = 
 				std::find_if(std::next(it), patterns.rend(),
 					[](const auto& pattern){ return !pattern.match(); }) == patterns.rend();
-			if ( can_move_to_next && have_not_unmatched_at_back ) {
+			if ( can_move_to_next /*&& have_not_unmatched_at_back*/ ) {
 				std::cout <<"P1:" << it->str() << "(" << std::distance(it, patterns.rend()) <<")" <<std::endl;
 				break;
 			}
@@ -76,9 +76,11 @@ bool Solution::isMatch(const std::string& r, const std::string& s) {
 			auto it2 = patterns.begin();
 			for(; it2!=std::prev(patterns.end(),1); it2++) {
 				auto next_it = std::next(it2,1);
-				bool can_move_to_next = !it2->string.empty() && (next_it->regex.size() != 1 || next_it->string.empty()); 
-				if ( can_move_to_next ) {
-					std::cout <<"P2:" << it2->str() <<std::endl;
+				bool can_move_to_next = it2->match() && !it2->string.empty() && (next_it->regex.size() != 1 || next_it->string.empty()); 
+				bool have_not_unmatched_at_back = 
+					std::find_if(patterns.begin(), it2, 
+						[](const auto& pattern){ return !pattern.match(); }) == it2;
+				if ( can_move_to_next && !have_not_unmatched_at_back ) {
 					std::cout <<"P2:" << it2->str() << "(" << std::distance(patterns.begin(), it2) <<")" <<std::endl;
 					break;
 				}
