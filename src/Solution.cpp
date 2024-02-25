@@ -9,37 +9,40 @@
 #include "types.h"
 
 
-bool Solution::isMatch(const std::string& r, const std::string& s) {
-	std::cout << r << ":" << s << std::endl;
-
+Patterns Solution::initializedPatterns(const std::string& r, const std::string& s) {
 	Patterns patterns;
 	patterns.reserve(r.size());
 	
 	PatternStringInitiator pattern_string_initiator(View{s.data(), s.size()});
-	for (const auto& simple_regex_view : SimpleRegexCollection(View{r.data(), r.size()})) {
+	for (const auto& simple_regex_view : SimpleRegexCollection(View{r.data(), r.size()}))
 		patterns.emplace_back(Pattern{simple_regex_view, pattern_string_initiator.next(simple_regex_view)});
-	}
+	return patterns;
+}
 
+bool Solution::isMatch(const std::string& r, const std::string& s) {
+	std::cout << r << ":" << s << std::endl;
+	patterns = std::move(initializedPatterns(r,s));
+	return isMatch();
+}
+
+bool Solution::allPatternsMatched() {
+	return std::find_if(patterns.begin(), patterns.end(), [](const auto& pattern) { return !pattern.match();}) == patterns.end();
+}
+
+bool Solution::isMatch() {
 	for (auto& pattern : patterns) std::cout << pattern.str() << std::endl;
 		
-	while (std::find_if(patterns.begin(), patterns.end(), [](const auto& pattern) { return !pattern.match();}) != patterns.end()) {
-		// !empty && can_move &&  most_+_index 
-
+	while (!allPatternsMatched()) {
 		auto it=std::next(patterns.rbegin(),1);
 		for(; it!=patterns.rend(); it++) {
 			auto prev_it = std::prev(it, 1);
-			//std::cout << "?(" << it->str() << ") (" << prev_it->str() << ")" << std::endl;
 			bool can_move_to_next = !it->match() && !it->string.empty() && (prev_it->regex.size() != 1 || prev_it->string.empty()); 
-			bool have_not_unmatched_at_back = 
-				std::find_if(std::next(it), patterns.rend(),
-					[](const auto& pattern){ return !pattern.match(); }) == patterns.rend();
-			if ( can_move_to_next /*&& have_not_unmatched_at_back*/ ) {
+			if ( can_move_to_next ) {
 				std::cout <<"P1:" << it->str() << "(" << std::distance(it, patterns.rend()) <<")" <<std::endl;
 				break;
 			}
 		}
 		if (it == patterns.rend()) {
-			// first time not a problem
 			auto it2 = patterns.begin();
 			for(; it2!=std::prev(patterns.end(),1); it2++) {
 				auto next_it = std::next(it2,1);
@@ -62,8 +65,6 @@ bool Solution::isMatch(const std::string& r, const std::string& s) {
 		auto& from_string = it->string;
 		auto& to_string = std::prev(it)->string;
 		std::cout <<"--" << std::endl;
-		//std::cout << "M-->:" <<  from_string << std::endl;
-		//std::cout << "M<--:" <<  to_string << std::endl;
 		to_string = std::string_view(&from_string[0] + from_string.size() - 1, to_string.size() + 1);
 		from_string.remove_suffix(1);
 		
