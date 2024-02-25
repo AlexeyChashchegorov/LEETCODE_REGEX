@@ -29,21 +29,47 @@ bool Solution::allPatternsMatched() {
 	return std::find_if(patterns.begin(), patterns.end(), [](const auto& pattern) { return !pattern.match();}) == patterns.end();
 }
 
+Patterns::reverse_iterator Solution::unmatchedToMove() {
+	auto it=std::next(patterns.rbegin(),1);
+	for(; it!=patterns.rend(); it++) {
+		auto prev_it = std::prev(it, 1);
+		bool can_move_to_next = !it->match() && !it->string.empty() && (prev_it->regex.size() != 1 || prev_it->string.empty()); 
+		if ( can_move_to_next ) {
+			std::cout <<"P1:" << it->str() << "(" << std::distance(it, patterns.rend()) <<")" <<std::endl;
+			break;
+		}
+	}
+	return it;
+}
+
+Patterns::reverse_iterator Solution::matchedToMove() {
+	auto it2 = patterns.begin();
+	for(; it2!=std::prev(patterns.end(),1); it2++) {
+		auto next_it = std::next(it2,1);
+		bool can_move_to_next = it2->match() && !it2->string.empty() && (next_it->regex.size() != 1 || next_it->string.empty()); 
+		bool have_not_unmatched_at_back = 
+			std::find_if(patterns.begin(), it2, 
+				[](const auto& pattern){ return !pattern.match(); }) == it2;
+		if ( can_move_to_next && !have_not_unmatched_at_back ) {
+			std::cout <<"P2:" << it2->str() << "(" << std::distance(patterns.begin(), it2) <<")" <<std::endl;
+			break;
+		}
+	}
+	if (it2 == std::prev(patterns.end(),1)) {
+		std::cout << "not match" << std::endl;
+		return patterns.rend();
+	}
+	return std::make_reverse_iterator(std::next(it2));
+}
+
 bool Solution::isMatch() {
 	for (auto& pattern : patterns) std::cout << pattern.str() << std::endl;
-		
+	auto it = patterns.rbegin();	
 	while (!allPatternsMatched()) {
-		auto it=std::next(patterns.rbegin(),1);
-		for(; it!=patterns.rend(); it++) {
-			auto prev_it = std::prev(it, 1);
-			bool can_move_to_next = !it->match() && !it->string.empty() && (prev_it->regex.size() != 1 || prev_it->string.empty()); 
-			if ( can_move_to_next ) {
-				std::cout <<"P1:" << it->str() << "(" << std::distance(it, patterns.rend()) <<")" <<std::endl;
-				break;
-			}
-		}
+		auto it = unmatchedToMove();
 		if (it == patterns.rend()) {
-			auto it2 = patterns.begin();
+			it = matchedToMove();
+			/*auto it2 = patterns.begin();
 			for(; it2!=std::prev(patterns.end(),1); it2++) {
 				auto next_it = std::next(it2,1);
 				bool can_move_to_next = it2->match() && !it2->string.empty() && (next_it->regex.size() != 1 || next_it->string.empty()); 
@@ -59,7 +85,10 @@ bool Solution::isMatch() {
 				std::cout << "not match" << std::endl;
 				break;
 			}
-			it = std::make_reverse_iterator(std::next(it2));
+			it = std::make_reverse_iterator(std::next(it2));*/
+		}
+		if ( it == patterns.rend()) {
+			break;
 		}
 		std::cout <<"Px:" << it->str() << "(" << std::distance(it, patterns.rend()) <<")" <<std::endl;
 		auto& from_string = it->string;

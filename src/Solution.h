@@ -8,6 +8,11 @@ private:
     bool isMatch();
     bool allPatternsMatched();
 
+    
+    Patterns::reverse_iterator unmatchedToMove();
+    Patterns::reverse_iterator matchedToMove();
+
+
     Patterns patterns;
 public:
     bool isMatch(const std::string& s, const std::string& p);
