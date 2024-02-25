@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "SimpleRegexCollection.h"
 #include "Pattern.h"
 #include "types.h"
 
@@ -13,13 +14,10 @@ bool Solution::isMatch(const std::string& r, const std::string& s) {
 	Patterns patterns;
 	patterns.reserve(r.size());
 	
-	for (const auto& c : r) {
-		if( c == '*' )
-			patterns.back().regex = View(patterns.back().regex.begin(), 2);
-		else
-			patterns.emplace_back(Pattern{View(&c, 1),View()});
-
+	for (const auto& simple_regex_view : SimpleRegexCollection(View{r.data(), r.size()})) {
+		patterns.emplace_back(Pattern{simple_regex_view, View()});
 	}
+	
 	const char* start = s.data();
 	for(auto& pattern : patterns) {
 		if (start >= (s.data() + s.size())) {

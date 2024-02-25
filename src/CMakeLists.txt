@@ -4,4 +4,4 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++2a")
 
 project(solution)
 
-add_executable ( solution Solution.cpp Pattern.cpp main.cpp )
+add_executable ( solution Solution.cpp Pattern.cpp SimpleRegexCollection.cpp main.cpp )
