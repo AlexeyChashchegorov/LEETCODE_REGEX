@@ -4,6 +4,7 @@
 #include <sstream>
 
 #include "SimpleRegexCollection.h"
+#include "PatternStringInitiator.h"
 #include "Pattern.h"
 #include "types.h"
 
@@ -14,18 +15,9 @@ bool Solution::isMatch(const std::string& r, const std::string& s) {
 	Patterns patterns;
 	patterns.reserve(r.size());
 	
+	PatternStringInitiator pattern_string_initiator(View{s.data(), s.size()});
 	for (const auto& simple_regex_view : SimpleRegexCollection(View{r.data(), r.size()})) {
-		patterns.emplace_back(Pattern{simple_regex_view, View()});
-	}
-	
-	const char* start = s.data();
-	for(auto& pattern : patterns) {
-		if (start >= (s.data() + s.size())) {
-			pattern.string = View(start, 0);
-		} else {
-			pattern.string = View(start, pattern.regex.size() == 1 ? 1 : s.data() + s.size() - start);
-		}
-		start = pattern.string.data() + pattern.string.size();
+		patterns.emplace_back(Pattern{simple_regex_view, pattern_string_initiator.next(simple_regex_view)});
 	}
 
 	for (auto& pattern : patterns) std::cout << pattern.str() << std::endl;
