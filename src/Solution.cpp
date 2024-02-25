@@ -2,10 +2,8 @@
 
 #include <iostream>
 #include <sstream>
-#include <vector>
 
-using View = std::string_view;
-using Views = std::vector<View>;
+#include "types.h"
 
 struct Pattern {
 	View regex;
