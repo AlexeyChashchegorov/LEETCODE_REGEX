@@ -10,4 +10,5 @@ public:
 	PatternStringInitiator() = delete;
 	PatternStringInitiator(const View& full_string_to_match_view_);
 	View next(const View& simple_regex_view);
+	bool initializedCompletely() const;
 };

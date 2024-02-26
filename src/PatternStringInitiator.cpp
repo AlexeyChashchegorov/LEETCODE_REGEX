@@ -16,3 +16,7 @@ View PatternStringInitiator::next(const View& simple_regex_view) {
 	string_to_match_start += string_to_match_size;
 	return ret;
 };
+
+bool PatternStringInitiator::initializedCompletely() const {
+	return string_to_match_start == full_string_to_match_view.data() + full_string_to_match_view.size();
+}

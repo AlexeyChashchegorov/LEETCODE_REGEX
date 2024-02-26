@@ -1,8 +1,5 @@
 #include "Solution.h"
 
-#include <iostream>
-#include <sstream>
-
 #include "SimpleRegexCollection.h"
 #include "PatternStringInitiator.h"
 #include "Pattern.h"
@@ -20,7 +17,6 @@ Patterns Solution::initializedPatterns(const std::string& r, const std::string& 
 }
 
 bool Solution::isMatch(const std::string& r, const std::string& s) {
-	std::cout << r << ":" << s << std::endl;
 	patterns = std::move(initializedPatterns(r,s));
 	return isMatch();
 }
@@ -34,10 +30,8 @@ Patterns::reverse_iterator Solution::unmatchedToMove() {
 	for(; it!=patterns.rend(); it++) {
 		auto prev_it = std::prev(it, 1);
 		bool can_move_to_next = !it->match() && !it->string.empty() && (prev_it->regex.size() != 1 || prev_it->string.empty()); 
-		if ( can_move_to_next ) {
-			std::cout <<"P1:" << it->str() << "(" << std::distance(it, patterns.rend()) <<")" <<std::endl;
+		if ( can_move_to_next )
 			break;
-		}
 	}
 	return it;
 }
@@ -50,55 +44,31 @@ Patterns::reverse_iterator Solution::matchedToMove() {
 		bool have_not_unmatched_at_back = 
 			std::find_if(patterns.begin(), it2, 
 				[](const auto& pattern){ return !pattern.match(); }) == it2;
-		if ( can_move_to_next && !have_not_unmatched_at_back ) {
-			std::cout <<"P2:" << it2->str() << "(" << std::distance(patterns.begin(), it2) <<")" <<std::endl;
+		if ( can_move_to_next && !have_not_unmatched_at_back )
 			break;
-		}
 	}
 	if (it2 == std::prev(patterns.end(),1)) {
-		std::cout << "not match" << std::endl;
 		return patterns.rend();
 	}
 	return std::make_reverse_iterator(std::next(it2));
 }
 
+Patterns::reverse_iterator Solution::patternToMoveFrom() {
+	auto it = unmatchedToMove();
+	return (it != patterns.rend()) ? it : matchedToMove();
+}
+
+void Solution::makeSymbolMove(Patterns::reverse_iterator& pattern_to_move_from_it) {
+	auto& from_string = pattern_to_move_from_it->string;
+	auto& to_string = std::prev(pattern_to_move_from_it)->string;
+	to_string = std::string_view(&from_string[0] + from_string.size() - 1, to_string.size() + 1);
+	from_string.remove_suffix(1);
+}
+
 bool Solution::isMatch() {
-	for (auto& pattern : patterns) std::cout << pattern.str() << std::endl;
-	auto it = patterns.rbegin();	
-	while (!allPatternsMatched()) {
-		auto it = unmatchedToMove();
-		if (it == patterns.rend()) {
-			it = matchedToMove();
-			/*auto it2 = patterns.begin();
-			for(; it2!=std::prev(patterns.end(),1); it2++) {
-				auto next_it = std::next(it2,1);
-				bool can_move_to_next = it2->match() && !it2->string.empty() && (next_it->regex.size() != 1 || next_it->string.empty()); 
-				bool have_not_unmatched_at_back = 
-					std::find_if(patterns.begin(), it2, 
-						[](const auto& pattern){ return !pattern.match(); }) == it2;
-				if ( can_move_to_next && !have_not_unmatched_at_back ) {
-					std::cout <<"P2:" << it2->str() << "(" << std::distance(patterns.begin(), it2) <<")" <<std::endl;
-					break;
-				}
-			}
-			if (it2 == std::prev(patterns.end(),1)) {
-				std::cout << "not match" << std::endl;
-				break;
-			}
-			it = std::make_reverse_iterator(std::next(it2));*/
-		}
-		if ( it == patterns.rend()) {
-			break;
-		}
-		std::cout <<"Px:" << it->str() << "(" << std::distance(it, patterns.rend()) <<")" <<std::endl;
-		auto& from_string = it->string;
-		auto& to_string = std::prev(it)->string;
-		std::cout <<"--" << std::endl;
-		to_string = std::string_view(&from_string[0] + from_string.size() - 1, to_string.size() + 1);
-		from_string.remove_suffix(1);
-		
-		for (auto& pattern : patterns) std::cout << pattern.str() << std::endl;
+	auto pattern_to_move_from_it = patterns.rbegin();	
+	while (!allPatternsMatched() && (pattern_to_move_from_it = patternToMoveFrom()) != patterns.rend()) {
+		makeSymbolMove(pattern_to_move_from_it);
 	}
-	
-	return false; // TODO make solution
+	return allPatternsMatched();
 }
