@@ -37,20 +37,20 @@ Patterns::reverse_iterator Solution::unmatchedToMove() {
 }
 
 Patterns::reverse_iterator Solution::matchedToMove() {
-	auto it2 = patterns.begin();
-	for(; it2!=std::prev(patterns.end(),1); it2++) {
-		auto next_it = std::next(it2,1);
-		bool can_move_to_next = it2->match() && !it2->string.empty() && (next_it->regex.size() != 1 || next_it->string.empty()); 
+	auto it2 = patterns.rbegin();
+	for(; it2!=std::prev(patterns.rend(),1); it2++) {
+		auto prev_it = std::prev(it2,1);
+		bool can_move_to_next = it2->match() && !it2->string.empty() && (prev_it->regex.size() != 1 || prev_it->string.empty()); 
 		bool have_not_unmatched_at_back = 
-			std::find_if(patterns.begin(), it2, 
-				[](const auto& pattern){ return !pattern.match(); }) == it2;
-		if ( can_move_to_next && !have_not_unmatched_at_back )
+			std::find_if(it2, patterns.rend(), 
+				[](const auto& pattern){ return !pattern.match(); }) == patterns.rend();
+		if ( can_move_to_next && have_not_unmatched_at_back )
 			break;
 	}
-	if (it2 == std::prev(patterns.end(),1)) {
+	if (it2 == std::prev(patterns.rend(),1)) {
 		return patterns.rend();
 	}
-	return std::make_reverse_iterator(std::next(it2));
+	return it2;
 }
 
 Patterns::reverse_iterator Solution::patternToMoveFrom() {
@@ -66,7 +66,7 @@ void Solution::makeSymbolMove(Patterns::reverse_iterator& pattern_to_move_from_i
 }
 
 bool Solution::isMatch() {
-	auto pattern_to_move_from_it = patterns.rbegin();	
+	auto pattern_to_move_from_it = patterns.rbegin();
 	while (!allPatternsMatched() && (pattern_to_move_from_it = patternToMoveFrom()) != patterns.rend()) {
 		makeSymbolMove(pattern_to_move_from_it);
 	}
